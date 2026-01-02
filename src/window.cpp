@@ -1,9 +1,9 @@
 #include "main.hpp"
 #include <array>
 
-GLFWwindow *window = nullptr;
-int win_width = 900;
-int win_height = 600;
+GLFWwindow *Window::window = nullptr;
+int Window::win_width = 960;
+int Window::win_height = 660;
 
 void setWindowHint(){
 	int values[3*2] = {
@@ -30,16 +30,16 @@ int Window::setup(){
 	Debug::debugme(MSG_SUCCESS, "Window::setup::setWindowHint() is SUCCESSFULLY to set hints for next glfwCreateWindow() call");
 
 	// Create a window
-	window = glfwCreateWindow(win_width, win_height, PROGRAM "_" VERSION, nullptr, nullptr);
-	if(!window){
+	Window::window = glfwCreateWindow(Window::win_width, Window::win_height, PROGRAM "_" VERSION, nullptr, nullptr);
+	if(!Window::window){
 		Debug::debugme(MSG_ERROR, "Window::setup::glfwCreateWindow() returns null");
 		return RET_FAILURE;
 	}
 	Debug::debugme(MSG_SUCCESS, "Window::setup::glfwCreateWindow() is SUCCESSFULLY to create a window");
 
 	// Make the window pointer as the current context
-	glfwMakeContextCurrent(window);
-	if(glfwGetCurrentContext() != window){
+	glfwMakeContextCurrent(Window::window);
+	if(glfwGetCurrentContext() != Window::window){
 		Debug::debugme(MSG_ERROR, "Window::setup::glfwGetCurrentContext() does not return the same window");
 		return RET_FAILURE;
 	}
@@ -55,19 +55,30 @@ int Window::setup(){
 }
 
 int Window::terminate(){
+	glfwDestroyWindow(Window::window);
 	glfwTerminate();
 	return RET_SUCCESS;
 }
 
 void Window::looping(){
-	Graphic::VAO.bind(true);
+	Graphic::VAO[V_PLANE].bind(true);
 	Graphic::program.use(true);
+
+	Model::object[V_PLANE].translate(0.0f, -0.5f, 0.0f);
+	Model::object[V_PLANE].rotate(90.0f, 1.0f, 0.0f, 0.0f);
+	Model::object[V_PLANE].scale(2.0f, 2.0f, 2.0f);
 	
-	while(!glfwWindowShouldClose(window)){
+	while(!glfwWindowShouldClose(Window::window)){
+		Display::get_fps();
+		Display::get_frametime();
+
+		Graphic::transform(Camera::projection() * Camera::view() * Model::object[V_PLANE].getMatrix());
 		Graphic::clear();
 		Graphic::draw();		
 
 		glfwPollEvents();
-		glfwSwapBuffers(window);
+		glfwSwapBuffers(Window::window);
+
+		Debug::debugme(MSG_INFO, "FPS: %d, FRM: %f", Display::framerate, Display::frametime);
 	}
 }

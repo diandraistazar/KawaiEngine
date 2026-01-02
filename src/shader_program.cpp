@@ -24,3 +24,7 @@ void ShaderProgram::link(){
 void ShaderProgram::use(bool use){
 	glUseProgram( use ? id : 0 );
 }
+
+int ShaderProgram::getID(){
+	return id;
+}

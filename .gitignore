@@ -1,3 +1,4 @@
 *.exe
 *.obj
 compile_flags.txt
+executable
