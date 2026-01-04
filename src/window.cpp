@@ -1,19 +1,21 @@
+#define USE_DEBUG
 #include "main.hpp"
 #include <array>
+
 
 GLFWwindow *Window::window = nullptr;
 int Window::win_width = 960;
 int Window::win_height = 660;
 
 void setWindowHint(){
-	int values[3*2] = {
+	std::array<int, 3*2> values = {
 	//	Hint				 		Value
 		GLFW_OPENGL_PROFILE, 		GLFW_OPENGL_CORE_PROFILE,
 		GLFW_CONTEXT_VERSION_MAJOR, 4,
 		GLFW_CONTEXT_VERSION_MINOR, 3,
 		
 	};
-	for(int i = 0; i < sizeof(values) / sizeof(values[0]); i+=2)
+	for(int i = 0; i < (int)values.size(); i+=2)
 		glfwWindowHint(values[i], values[i+1]);
 }
 
@@ -61,24 +63,31 @@ int Window::terminate(){
 }
 
 void Window::looping(){
-	Graphic::VAO[V_PLANE].bind(true);
 	Graphic::program.use(true);
 
-	Model::object[V_PLANE].translate(0.0f, -0.5f, 0.0f);
-	Model::object[V_PLANE].rotate(90.0f, 1.0f, 0.0f, 0.0f);
-	Model::object[V_PLANE].scale(2.0f, 2.0f, 2.0f);
-	
+		
 	while(!glfwWindowShouldClose(Window::window)){
 		Display::get_fps();
 		Display::get_frametime();
+		
+		Graphic::VAO[V_PLANE].resetMatrix(1.0f);
+		Graphic::VAO[V_PLANE].translate(0.0f, -0.5f, 0.0f);
+		Graphic::VAO[V_PLANE].rotate(90.0f, 1.0f, 0.0f, 0.0f);
+		Graphic::VAO[V_PLANE].scale(2.0f, 2.0f, 2.0f);
 
-		Graphic::transform(Camera::projection() * Camera::view() * Model::object[V_PLANE].getMatrix());
+		Graphic::VAO[V_BOX].resetMatrix(1.0f);
+		Graphic::VAO[V_BOX].translate(0.0f, 0.3f, 0.0f);
+		Graphic::VAO[V_BOX].rotate(glfwGetTime() * 180.0f / 3.14f, 0.0f, 1.0f, 0.0f);
+
 		Graphic::clear();
-		Graphic::draw();		
-
+		for(int i = 0; i < V_TOTAL; i++){
+			glm::mat4 matrix = Camera::projection() * Camera::view() * Graphic::VAO[i].getMatrix();
+			Graphic::VAO[i].bind(true);
+			Graphic::transform(matrix);
+			Graphic::draw(Graphic::VAO[i]);		
+		}
 		glfwPollEvents();
 		glfwSwapBuffers(Window::window);
-
 		Debug::debugme(MSG_INFO, "FPS: %d, FRM: %f", Display::framerate, Display::frametime);
 	}
 }

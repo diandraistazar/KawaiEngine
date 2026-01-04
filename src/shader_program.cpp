@@ -1,3 +1,4 @@
+#define USE_DEBUG
 #include "main.hpp"
 
 int ShaderProgram::create(){

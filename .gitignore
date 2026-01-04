@@ -1,4 +1,2 @@
-*.exe
-*.obj
+*.out
 compile_flags.txt
-executable

@@ -1,3 +1,4 @@
+#define USE_DEBUG
 #include "main.hpp"
 #include "text_loader.hpp"
 

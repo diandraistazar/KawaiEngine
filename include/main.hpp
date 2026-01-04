@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include <string>
 #include <cstdio>
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
@@ -13,19 +13,35 @@
 
 enum { RET_SUCCESS, RET_FAILURE };
 enum { MSG_SUCCESS, MSG_WARNING, MSG_ERROR, MSG_INFO };
-enum { V_PLANE, V_TOTAL };
+enum { V_PLANE, V_BOX, V_TOTAL };
 
 class VertexArray{
-unsigned int id = 0, buffer_id = 0, c_target = -1;
+glm::mat4 matrix;
+unsigned int id = 0;
+struct Buffer{
+	unsigned int id = -1;
+	unsigned int target = -1;
+	unsigned int vertex_size = 0;
+	float *pointer = nullptr;
+	size_t size = 0;
+}buffer;
 
 public:
-int create();
+int getVerticies();
+int create(float *data, size_t size);
 void deletearray();
-void setpointer(int location, int count, int type, int stride, int offset);
+void setpointer(int location, int count, int type, int stride, void* offset);
 void enablepointer(int location);
 void bind(bool use);
 void bind_buffer(int target, bool use);
-void copydata(size_t data_size, float *data, int use);
+void copydata(int use);
+
+// For Transformation
+void scale(float x_scalar, float y_scalar, float z_scalar);
+void rotate(float degree, float around_x, float around_y, float around_z);
+void translate(float x, float y, float z);
+void resetMatrix(float value);
+glm::mat4 getMatrix();
 };
 
 class Shader{
@@ -51,28 +67,22 @@ void link();
 int getID();
 };
 
-class Object{
-glm::mat4 matrix;
-
-public:
-Object();
-void scale(float x_scalar, float y_scalar, float z_scalar);
-void rotate(float degree, float around_x, float around_y, float around_z);
-void translate(float x, float y, float z);
-glm::mat4 getMatrix();
-};
-
+#ifdef USE_DEBUG
 namespace Debug{
 	template<typename... Arg>
 	static void debugme(int type, const char* string, Arg... args){
 		std::FILE *output[] = { stdout, stdout, stderr, stdout };
-		char *type_strings[] = { "SUCCESS", "WARNING", "ERROR", "INFO" };
-		char *colors[] = { "\033[32m", "\033[33m", "\033[31m", "" };
-		char *reset = "\033[0m";
+		std::string strings[] = { 
+			// GREEN	YELLOW		 RED		WHITE	
+			"SUCCESS",  "WARNING",  "ERROR",    "INFO",
+			"\e[32m",   "\e[33m",   "\e[31m",   "",
+			
+			// RESET
+			"\e[0m"
+		};
 		char buffer[1024] = {0};
-
 		std::snprintf(buffer, sizeof(buffer), string, args...);
-		std::fprintf(output[type], "%s-%s:%s[%s] = %s%s\n", PROGRAM, VERSION, colors[type], type_strings[type], buffer, reset);
+		std::fprintf(output[type], "%s-%s:%s[%s] = %s%s\n", PROGRAM, VERSION, strings[type+4].c_str(), strings[type].c_str(), buffer, strings[8].c_str());
 	}
 	static void debugmatrix(float *matrix, int dimension){
 		for(int index = 0; index < dimension; index++){
@@ -83,6 +93,7 @@ namespace Debug{
 		std::puts("");
 	}
 }
+#endif
 
 namespace Display{
 	extern int framerate;
@@ -90,10 +101,6 @@ namespace Display{
 
 	void get_fps();
 	void get_frametime();
-}
-
-namespace Model{
-	extern Object object[V_TOTAL];
 }
 
 namespace Window{
@@ -112,7 +119,7 @@ namespace Graphic{
 	extern Shader vertex, fragment;
 
 	int setup();
-	void draw();
+	void draw(VertexArray &vertex);
 	void clear();
 	void transform(glm::mat4 &matrix);
 }
@@ -121,6 +128,7 @@ namespace Input{
 	extern float sensivity_pointer;
 	extern float movement_speed;
 
+	int setup();
 	void get_movement(glm::vec3 &vector, glm::vec3 &direction);
 	void get_direction(glm::vec3 &vector);
 }

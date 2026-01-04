@@ -7,6 +7,7 @@
 
 // ! KawaiEngine adalah tempat dimana setiap apa yang saya pelajari mengenai Graphics Programming akan diterapkan di Engine ini
 
+#define USE_DEBUG
 #include "main.hpp"
 
 int main(){
@@ -23,6 +24,12 @@ int main(){
 		return RET_FAILURE;
 	}
 	Debug::debugme(MSG_SUCCESS, "Graphic::setup() is SUCCESSFULLY to Setup Graphic System");
+
+	if(Input::setup()){
+		Debug::debugme(MSG_ERROR, "Input::setup() is FAILED to Setup Input System");
+		return RET_FAILURE;
+	}
+	Debug::debugme(MSG_SUCCESS, "Input::setup() is SUCCESSFULLY to Setup Input System");
 
 	// Main Looping
 	Debug::debugme(MSG_INFO, "Window::looping() Enter the Main Looping");

@@ -1,6 +1,8 @@
+#define USE_DEBUG
 #include "main.hpp"
+#include <array>
 
-float vertices[] = {
+std::array<float, 18> plane = {
 	0.6f, 0.6f, 0.0f,
 	0.6f, -0.6f, 0.0f,
 	-0.6f, -0.6f, 0.0f,
@@ -8,6 +10,38 @@ float vertices[] = {
 	-0.6f, -0.6f, 0.0f,
 	-0.6f, 0.6f, 0.0f,
 	0.6f, 0.6f, 0.0f,
+};
+
+std::array<float, 54> box = {
+	// Front
+	0.0f, 0.5f, 0.0f,
+	0.5f, -0.5f, 0.5f,
+	-0.5f, -0.5f, 0.5f,
+	
+	// Right
+	0.0f, 0.5f, 0.0f,
+	0.5f, -0.5f, 0.5f,
+	0.5f, -0.5f, -0.5f,
+
+	// Left
+	0.0f, 0.5f, 0.0f,
+	-0.5f, -0.5f, 0.5f,
+	-0.5f, -0.5f, -0.5f,
+
+	// Back
+	0.0f, 0.5f, 0.0f,
+	0.5f, -0.5f, -0.5f,
+	-0.5f, -0.5f, -0.5f,
+
+
+	// Bottom
+	0.5f, -0.5f, 0.5f,
+	-0.5f, -0.5f, 0.5f,
+	-0.5f, -0.5f, -0.5f,
+	
+	-0.5f, -0.5f, -0.5f,
+	0.5f, -0.5f, -0.5f,
+	0.5f, -0.5f, 0.5f,
 };
 
 VertexArray Graphic::VAO[V_TOTAL];
@@ -19,7 +53,8 @@ int Graphic::setup(){
 	int ret = 0;
 	
 	// Create VAO
-	ret = Graphic::VAO[V_PLANE].create();
+	ret = Graphic::VAO[V_PLANE].create(plane.data(), plane.size() * sizeof(float));
+	ret = Graphic::VAO[V_BOX].create(box.data(), box.size() * sizeof(float));
 	if(ret){
 		Debug::debugme(MSG_ERROR, "Graphic::setup::createVAO() returns RET_FAILURE");
 		return RET_FAILURE;
@@ -29,13 +64,22 @@ int Graphic::setup(){
 	// Bind VAO
 	Graphic::VAO[V_PLANE].bind(true);
 	Graphic::VAO[V_PLANE].bind_buffer(GL_ARRAY_BUFFER, true);
-	Graphic::VAO[V_PLANE].copydata(sizeof(vertices), vertices, GL_STATIC_DRAW);
-	Graphic::VAO[V_PLANE].setpointer(0, 3, GL_FLOAT, 3 * sizeof(float), 0);
+	Graphic::VAO[V_PLANE].copydata(GL_STATIC_DRAW);
+	Graphic::VAO[V_PLANE].setpointer(0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
 	Graphic::VAO[V_PLANE].enablepointer(0);
 
+	Graphic::VAO[V_BOX].bind(true);
+	Graphic::VAO[V_BOX].bind_buffer(GL_ARRAY_BUFFER, true);
+	Graphic::VAO[V_BOX].copydata(GL_STATIC_DRAW);
+	Graphic::VAO[V_BOX].setpointer(0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+	Graphic::VAO[V_BOX].enablepointer(0);
+
+	Graphic::VAO[V_BOX].bind(false);
+	Graphic::VAO[V_BOX].bind_buffer(GL_ARRAY_BUFFER, false);
+
 	// Create shader and intialize
-	ret = Graphic::vertex.load("shaders\\vertex.vert", GL_VERTEX_SHADER);
-	ret = Graphic::fragment.load("shaders\\fragment.frag", GL_FRAGMENT_SHADER);
+	ret = Graphic::vertex.load("shaders/vertex.vert", GL_VERTEX_SHADER);
+	ret = Graphic::fragment.load("shaders/fragment.frag", GL_FRAGMENT_SHADER);
 	if(ret){
 		Debug::debugme(MSG_ERROR, "Graphic::setup::loadshaders() returns RET_FAILURE");
 		return RET_FAILURE;
@@ -70,13 +114,11 @@ int Graphic::setup(){
 		return RET_FAILURE;
 	}
 	Debug::debugme(MSG_SUCCESS, "Graphic::setup::deleteshaders() returns RET_SUCCESS");
-	Graphic::VAO[V_PLANE].bind(false);
-	Graphic::VAO[V_PLANE].bind_buffer(GL_ARRAY_BUFFER, false);
 	return RET_SUCCESS;
 }
 
-void Graphic::draw(){
-	glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices) / sizeof(vertices[0]) / 3);
+void Graphic::draw(VertexArray &vertex){
+	glDrawArrays(GL_TRIANGLES, 0, vertex.getVerticies());
 }
 
 void Graphic::clear(){

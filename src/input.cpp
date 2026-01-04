@@ -1,7 +1,13 @@
+#define USE_DEBUG
 #include "main.hpp"
 
 float Input::sensivity_pointer = 0.5f;
 float Input::movement_speed = 1.0f;
+
+int Input::setup(){
+	glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	return RET_SUCCESS;
+}
 
 void Input::get_movement(glm::vec3 &vector, glm::vec3 &direction){
 	static float l_time = 0;
@@ -28,31 +34,25 @@ void Input::get_movement(glm::vec3 &vector, glm::vec3 &direction){
 }
 
 void Input::get_direction(glm::vec3 &vector){
-	static double last_x_pos = 0.0f, last_y_pos = 0.0f;
-	static float l_time = 0.0f;
 	static float pitch = 0.0f, yaw = 0.0f;
-	double x_pos, y_pos;
-	float time = glfwGetTime();
-	float delta = time - l_time;
+	double xpos = 0.0f, ypos = 0.0f;
 
-	glfwGetCursorPos(Window::window, &x_pos, &y_pos);
-	if(last_x_pos == 0.0f && last_y_pos == 0.0f){
-		last_x_pos = x_pos;
-		last_y_pos = y_pos;
-	}
-	pitch += (y_pos - last_y_pos) * 360.0f * sensivity_pointer * delta;
-	yaw += (x_pos - last_x_pos) * 360.0f * sensivity_pointer * delta;
-
+	glfwGetCursorPos(Window::window, &xpos, &ypos);
+	float y = ypos * sensivity_pointer;
+	float x = xpos * sensivity_pointer;
+	pitch = y / Window::win_height * 360.0f;
+	yaw = x / Window::win_width * 360.0f;
+	
 	if(pitch > 89.9f)
 		pitch = 89.9f;
 	else if(pitch < -89.9f)
 		pitch =  -89.9f;
 
-	vector.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	vector.y = sin(glm::radians(pitch)) * -1.0f;
-	vector.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	Debug::debugme(MSG_INFO, "pitch: %.1f, yaw: %.1f", pitch, yaw);
 
-	last_x_pos = x_pos;
-	last_y_pos = y_pos;
-	l_time = time;
+	float yaw_radians = glm::radians(yaw);
+	float pitch_radians = glm::radians(pitch);
+	vector.x = cos(yaw_radians) * cos(pitch_radians);
+	vector.y = sin(pitch_radians) * -1.0f;
+	vector.z = sin(yaw_radians) * cos(pitch_radians);
 }
