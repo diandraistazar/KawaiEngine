@@ -6,11 +6,8 @@ float Camera::near_plane = 0.1f;
 float Camera::far_plane = 10.0f;
 
 glm::mat4 Camera::view(){
-	static glm::vec3 movement(0.0f), direction(0.0f);
-	
-	Input::get_direction(direction);
-	Input::get_movement(movement, direction);
-	return glm::lookAt(movement, movement + direction, glm::vec3(0.0f, 1.0f, 0.0f));
+	Input::get_direction(); Input::get_movement();
+	return glm::lookAt(Input::position, Input::position + Input::direction, glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 glm::mat4 Camera::projection(){

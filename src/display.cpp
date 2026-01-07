@@ -1,10 +1,10 @@
 #include "main.hpp"
 
-int Display::framerate;
-float Display::frametime;
+int Display::framerate = 0;
+float Display::frametime = 0.0f;
 
 void Display::get_fps(){
-	static float l_time = 0;
+	static float l_time = 0.0f;
 	float time = glfwGetTime();
 	static int frame = 0;
 

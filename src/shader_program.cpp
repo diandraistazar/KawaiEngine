@@ -1,6 +1,10 @@
 #define USE_DEBUG
 #include "main.hpp"
 
+int ShaderProgram::getID(){
+	return id;
+}
+
 int ShaderProgram::create(){
 	id = glCreateProgram();
 	if(!id){
@@ -26,6 +30,19 @@ void ShaderProgram::use(bool use){
 	glUseProgram( use ? id : 0 );
 }
 
-int ShaderProgram::getID(){
-	return id;
+void ShaderProgram::setUniform1i(const char *uniform_name, int value){
+	int location = glGetUniformLocation(id, uniform_name);
+	if(location == -1)
+		Debug::debugme(MSG_ERROR, "ShaderProgram::setUniform1i() cannot be found the \"%s\" uniform", uniform_name);
+	else 
+		glUniform1i(location, value);
 }
+
+void ShaderProgram::setUniformMatrix4fv(const char *uniform_name, float *matrix){
+	int location = glGetUniformLocation(id, uniform_name);
+	if(location == -1)
+		Debug::debugme(MSG_ERROR, "ShaderProgram::setUniformMatrix4fv() cannot be found the \"%s\" uniform", uniform_name);
+	else
+		glUniformMatrix4fv(location, 1, GL_FALSE, matrix);
+}
+

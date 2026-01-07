@@ -13,27 +13,31 @@
 
 enum { RET_SUCCESS, RET_FAILURE };
 enum { MSG_SUCCESS, MSG_WARNING, MSG_ERROR, MSG_INFO };
-enum { V_PLANE, V_BOX, V_TOTAL };
+enum { V_PLANE, V_TRIANGLE, V_TOTAL };
 
-class VertexArray{
-glm::mat4 matrix;
-unsigned int id = 0;
 struct Buffer{
+	float *pointer = nullptr;
 	unsigned int id = -1;
 	unsigned int target = -1;
 	unsigned int vertex_size = 0;
-	float *pointer = nullptr;
-	size_t size = 0;
-}buffer;
+	int size = 0;
+};
+
+class VertexArray{
+unsigned int id = -1;
+Buffer buffer;
+glm::mat4 matrix;
 
 public:
+static void bind(VertexArray &array, bool use);
+static void enablepointer(int location);
+
+int getID();
 int getVerticies();
-int create(float *data, size_t size);
+int create(float *data, int size);
 void deletearray();
-void setpointer(int location, int count, int type, int stride, void* offset);
-void enablepointer(int location);
-void bind(bool use);
 void bind_buffer(int target, bool use);
+void setpointer(int location, int count, int type, int stride, void* offset);
 void copydata(int use);
 
 // For Transformation
@@ -45,34 +49,49 @@ glm::mat4 getMatrix();
 };
 
 class Shader{
-unsigned int id = 0;
 char buffer[1024] = {0};
+const char *name = nullptr;
+unsigned int id = -1;
 
 public:
 int load(const char* filename, int shader_type);
 int compile();
-int deleteshader();
+void deleteshader();
 int getID();
 };
 
 class ShaderProgram{
-unsigned int id = 0;
+unsigned int id = -1;
 
 public:
+int getID();
 int create();
 void deleteprog();
 void use(bool use);
 void attach(int shader);
 void link();
-int getID();
+void setUniform1i(const char *uniform_name, int value);
+void setUniformMatrix4fv(const char *uniform_name, float *matrix);
+};
+
+class Texture{
+unsigned char *data = nullptr;
+unsigned int id = -1;
+int img_w, img_h, comp;
+
+public:
+static void activeTexture(int unit);
+
+int create(int target, int base_level, int format, bool use_mipmap, const char* img_name);
+void deletetexture();
 };
 
 #ifdef USE_DEBUG
 namespace Debug{
 	template<typename... Arg>
 	static void debugme(int type, const char* string, Arg... args){
-		std::FILE *output[] = { stdout, stdout, stderr, stdout };
-		std::string strings[] = { 
+		char buffer[256] = {0};
+		const char *strings[] = { 
 			// GREEN	YELLOW		 RED		WHITE	
 			"SUCCESS",  "WARNING",  "ERROR",    "INFO",
 			"\e[32m",   "\e[33m",   "\e[31m",   "",
@@ -80,17 +99,10 @@ namespace Debug{
 			// RESET
 			"\e[0m"
 		};
-		char buffer[1024] = {0};
+		std::FILE *output[] = { stdout, stdout, stderr, stdout };
+		
 		std::snprintf(buffer, sizeof(buffer), string, args...);
-		std::fprintf(output[type], "%s-%s:%s[%s] = %s%s\n", PROGRAM, VERSION, strings[type+4].c_str(), strings[type].c_str(), buffer, strings[8].c_str());
-	}
-	static void debugmatrix(float *matrix, int dimension){
-		for(int index = 0; index < dimension; index++){
-			if(index == 4 || index == 8 || index == 12)
-				std::puts("");
-			std::printf("%.1f ", matrix[index]);
-		}
-		std::puts("");
+		std::fprintf(output[type], "%s-%s:%s[%s] = %s%s\n", PROGRAM, VERSION, strings[type+4], strings[type], buffer, strings[8]);
 	}
 }
 #endif
@@ -117,20 +129,23 @@ namespace Graphic{
 	extern VertexArray VAO[V_TOTAL];
 	extern ShaderProgram program;
 	extern Shader vertex, fragment;
-
+	extern Texture texture1;
+	
 	int setup();
+	void cleanup();
 	void draw(VertexArray &vertex);
 	void clear();
-	void transform(glm::mat4 &matrix);
 }
 
 namespace Input{
+	extern float pitch, yaw;
 	extern float sensivity_pointer;
 	extern float movement_speed;
+	extern glm::vec3 position, direction;
 
 	int setup();
-	void get_movement(glm::vec3 &vector, glm::vec3 &direction);
-	void get_direction(glm::vec3 &vector);
+	void get_movement();
+	void get_direction();
 }
 
 namespace Camera{
