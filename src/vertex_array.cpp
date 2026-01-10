@@ -1,5 +1,6 @@
-#define USE_DEBUG
 #include "main.hpp"
+#include "vertex_array.hpp"
+#include "debug.hpp"
 
 void VertexArray::bind(VertexArray &array, bool use){
 	unsigned int id_temp = 0;
@@ -24,7 +25,7 @@ int VertexArray::create(float *data, int size){
 	glGenVertexArrays(1, &id);
 	glGenBuffers(1, &buffer.id);
 	if(!id || !buffer.id){
-		Debug::debugme(MSG_ERROR, "VertexArray::create() created an ID with zero value");
+		Debug::debugme(M_ERROR, "VertexArray::create() created an ID with zero value");
 		return RET_FAILURE;
 	}
 	buffer.pointer = data;

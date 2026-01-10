@@ -7,47 +7,55 @@
 
 // ! KawaiEngine adalah tempat dimana setiap apa yang saya pelajari mengenai Graphics Programming akan diterapkan di Engine ini
 
-#define USE_DEBUG
 #include "main.hpp"
+#include "window.hpp"
+#include "graphic.hpp"
+#include "input.hpp"
+#include "debug.hpp"
+
+struct Setup{
+	const char *s_name;
+	int (*p_function)(void);
+	void (*p_cleanup)(void);
+};
+Setup init[] = {
+	{ "Window::setup()", Window::setup, Window::terminate },
+	{ "Graphic::setup()", Graphic::setup, Graphic::cleanup },
+	{ "Input::setup()", Input::setup, nullptr },
+};
+
+struct Engine{
+	static int setup(){
+		for(int index = 0; index < sizeof(init)/sizeof(init[0]); index++){
+			if(init[index].p_function){
+				int ret = init[index].p_function();
+				if(ret){
+					Debug::debugme(M_ERROR, "%s is FAILED", init[index].s_name);
+					return RET_FAILURE;
+				}
+				Debug::debugme(M_SUCCESS, "%s is SUCCESSFULLY", init[index].s_name);
+			}
+		}
+		return RET_SUCCESS;
+	}
+	static void cleanup(){
+		for(int index = 0; index < sizeof(init)/sizeof(init[0]); index++){
+			if(init[index].p_cleanup)
+				init[index].p_cleanup();
+		}
+	}
+	static void run(){
+		Debug::debugme(M_INFO, "Enter Window::looping()");
+		Window::looping();
+		Debug::debugme(M_INFO, "Exit Window::looping()");
+	}
+};
 
 int main(){
-	// Setup Window System
-	if(Window::setup()){
-		Debug::debugme(MSG_ERROR, "Window::setup() is FAILED to Setup Window System");
+	if(Engine::setup())
 		return RET_FAILURE;
-	}
-	else Debug::debugme(MSG_SUCCESS, "Window::setup() is SUCCESSFULLY to Setup Window System");
-	
-	// Setup Graphic System
-	if(Graphic::setup()){
-		Debug::debugme(MSG_ERROR, "Graphic::setup() is FAILED to Setup Graphic System");
-		return RET_FAILURE;
-	}
-	else Debug::debugme(MSG_SUCCESS, "Graphic::setup() is SUCCESSFULLY to Setup Graphic System");
 
-	// Setup Input System
-	if(Input::setup()){
-		Debug::debugme(MSG_ERROR, "Input::setup() is FAILED to Setup Input System");
-		return RET_FAILURE;
-	}
-	else Debug::debugme(MSG_SUCCESS, "Input::setup() is SUCCESSFULLY to Setup Input System");
-
-	// Main Looping
-	Debug::debugme(MSG_INFO, "Window::looping() Enter the Main Looping");
-	Window::looping();
-	Debug::debugme(MSG_INFO, "Window::looping() Exit from the Main Looping");
-
-	// Cleanup Graphic System
-	Graphic::cleanup();
-	Debug::debugme(MSG_SUCCESS, "Graphic::cleanup() is SUCCESSFULLY to cleanup");
-	
-	// Terminate Window System
-	if(Window::terminate()){
-		Debug::debugme(MSG_ERROR, "Window::terminate() is FAILED to Terminate Window System");
-		return RET_FAILURE;
-	}
-	else Debug::debugme(MSG_SUCCESS, "Window::terminate() is SUCCESSFULLY to Terminate Window System");
-
-	Debug::debugme(MSG_INFO, "Program Terminated");
+	Engine::run();
+	Engine::cleanup();
 	return RET_SUCCESS;
 }

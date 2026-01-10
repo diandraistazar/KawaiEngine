@@ -1,6 +1,11 @@
-#define USE_DEBUG
 #include "main.hpp"
-
+#include "window.hpp"
+#include "graphic.hpp"
+#include "input.hpp"
+#include "camera.hpp"
+#include "vertex_array.hpp"
+#include "display.hpp"
+#include "debug.hpp"
 
 GLFWwindow *Window::window = nullptr;
 int Window::win_width = 960;
@@ -21,45 +26,44 @@ void setWindowHint(){
 int Window::setup(){
 	// Initialize GLFW
 	if(!glfwInit()){
-		Debug::debugme(MSG_ERROR, "Window::setup::glfwInit() returns false");
+		Debug::debugme(M_ERROR, "Window::setup::glfwInit() returns false");
 		return RET_FAILURE;
 	}
-	Debug::debugme(MSG_SUCCESS, "Window::setup::glfwInit() is SUCCESSFULLY to initialize");
+	Debug::debugme(M_SUCCESS, "Window::setup::glfwInit() is SUCCESSFULLY to initialize");
 
 	// Set window hints for next glfwCreateWindow call
 	setWindowHint();
-	Debug::debugme(MSG_SUCCESS, "Window::setup::setWindowHint() is SUCCESSFULLY to set hints for next glfwCreateWindow() call");
+	Debug::debugme(M_SUCCESS, "Window::setup::setWindowHint() is SUCCESSFULLY to set hints for next glfwCreateWindow() call");
 
 	// Create a window
 	Window::window = glfwCreateWindow(Window::win_width, Window::win_height, PROGRAM "_" VERSION, nullptr, nullptr);
 	if(!Window::window){
-		Debug::debugme(MSG_ERROR, "Window::setup::glfwCreateWindow() returns null");
+		Debug::debugme(M_ERROR, "Window::setup::glfwCreateWindow() returns null");
 		return RET_FAILURE;
 	}
-	Debug::debugme(MSG_SUCCESS, "Window::setup::glfwCreateWindow() is SUCCESSFULLY to create a window");
+	Debug::debugme(M_SUCCESS, "Window::setup::glfwCreateWindow() is SUCCESSFULLY to create a window");
 
 	// Make the window pointer as the current context
 	glfwMakeContextCurrent(Window::window);
 	if(glfwGetCurrentContext() != Window::window){
-		Debug::debugme(MSG_ERROR, "Window::setup::glfwGetCurrentContext() does not return the same window");
+		Debug::debugme(M_ERROR, "Window::setup::glfwGetCurrentContext() does not return the same window");
 		return RET_FAILURE;
 	}
-	Debug::debugme(MSG_SUCCESS, "Window::setup::glfwMakeContextCurrent() is SUCCESSFULLY to make the window as the current context");
+	Debug::debugme(M_SUCCESS, "Window::setup::glfwMakeContextCurrent() is SUCCESSFULLY to make the window as the current context");
 
 	// Load OpenGL 3.3 functions from Driver with Glad Loader
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
-		Debug::debugme(MSG_ERROR, "Window::setup::gladLoadGLLoader() returns false");
+		Debug::debugme(M_ERROR, "Window::setup::gladLoadGLLoader() returns false");
 		return RET_FAILURE;
 	}
-	Debug::debugme(MSG_SUCCESS, "Window::setup::gladLoadGLLoader() is SUCCESSFULLY to load OpenGL 3.3 Functions");
+	Debug::debugme(M_SUCCESS, "Window::setup::gladLoadGLLoader() is SUCCESSFULLY to load OpenGL 3.3 Functions");
 	glfwSwapInterval(0);
 	return RET_SUCCESS;
 }
 
-int Window::terminate(){
+void Window::terminate(){
 	glfwDestroyWindow(Window::window);
 	glfwTerminate();
-	return RET_SUCCESS;
 }
 
 void Window::looping(){
@@ -69,6 +73,8 @@ void Window::looping(){
 		Display::get_fps();
 		Display::get_frametime();
 		
+		Input::mouse_mode();
+
 		Graphic::VAO[V_PLANE].resetMatrix(1.0f);
 		Graphic::VAO[V_PLANE].translate(0.0f, -0.5f, 0.0f);
 		Graphic::VAO[V_PLANE].rotate(90.0f, 1.0f, 0.0f, 0.0f);
@@ -76,7 +82,12 @@ void Window::looping(){
 
 		Graphic::VAO[V_TRIANGLE].resetMatrix(1.0f);
 		Graphic::VAO[V_TRIANGLE].translate(0.0f, 0.3f, 0.0f);
-		Graphic::VAO[V_TRIANGLE].rotate(glfwGetTime() * 180.0f / 3.14f, 0.0f, 1.0f, 0.0f);
+		Graphic::VAO[V_TRIANGLE].rotate(glfwGetTime(), 0.0f, 1.0f, 0.0f);
+
+		Graphic::VAO[V_LIGHT].resetMatrix(1.0f);
+		Graphic::VAO[V_LIGHT].rotate(glfwGetTime() * 180.0f / 3.14f, 0.0f, 1.0f, 0.0f);
+		Graphic::VAO[V_LIGHT].translate(2.0f, 0.0f, 0.0f);
+		Graphic::VAO[V_LIGHT].scale(0.5f, 0.5f, 0.5f);
 
 		Graphic::clear();
 		for(VertexArray &array : Graphic::VAO){
@@ -90,8 +101,8 @@ void Window::looping(){
 		glfwPollEvents();
 		glfwSwapBuffers(Window::window);
 
-		Debug::debugme(MSG_INFO, "FPS: %d, FRM: %f", Display::framerate, Display::frametime);
-		Debug::debugme(MSG_INFO, "Position: %.2f %.2f %.2f, Direction: %.2f %.2f %.2f", Input::position.x, Input::position.y, Input::position.z, Input::direction.x, Input::direction.y, Input::direction.z);
-		Debug::debugme(MSG_INFO, "Pitch: %.2f, Yaw: %.2f", Input::pitch, Input::yaw);
+		Debug::debugme(M_INFO, "FPS: %d, FRM: %f", Display::framerate, Display::frametime);
+		Debug::debugme(M_INFO, "Position: %.2f %.2f %.2f, Direction: %.2f %.2f %.2f", Input::position.x, Input::position.y, Input::position.z, Input::direction.x, Input::direction.y, Input::direction.z);
+		Debug::debugme(M_INFO, "Pitch: %.2f, Yaw: %.2f", Input::pitch, Input::yaw);
 	}
 }

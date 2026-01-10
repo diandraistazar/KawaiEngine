@@ -1,4 +1,7 @@
 #include "main.hpp"
+#include "window.hpp"
+#include "input.hpp"
+#include "camera.hpp"
 
 float Camera::fov = 60.0f;
 float Camera::aspect_ratio = (float)Window::win_width/Window::win_height;

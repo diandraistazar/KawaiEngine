@@ -1,18 +1,19 @@
-#define USE_DEBUG
 #include "main.hpp"
+#include "shader.hpp"
+#include "debug.hpp"
 #include "text_loader.hpp"
 
 int Shader::load(const char* filename, int shader_type){
 	name = filename;
 	id = glCreateShader(shader_type);
 	if(!id){
-		Debug::debugme(MSG_ERROR, "Shader::load::glCreateShader() %s: returns 0", name);
+		Debug::debugme(M_ERROR, "Shader::load::glCreateShader() %s: returns 0", name);
 		return RET_FAILURE;
 	}
 	// load source code
 	int ret = load_text(name, sizeof(buffer), buffer);
 	if(ret){
-		Debug::debugme(MSG_ERROR, "Shader::load::load_text() %s: returns \"%s\"", error_to_string(ret), name);
+		Debug::debugme(M_ERROR, "Shader::load::load_text() %s: returns \"%s\"", error_to_string(ret), name);
 		return RET_FAILURE;
 	}
 	
@@ -31,8 +32,8 @@ int Shader::compile(){
 	glGetShaderInfoLog(id, sizeof(buffer), &buffer_size, buffer);
 	buffer[buffer_size-1] = '\0'; // remove newline from log
 	if(!ret){
-		Debug::debugme(MSG_ERROR, "Shader::compile::glCompileShader() %s: is FAILED to compile source code", name);
-		Debug::debugme(MSG_ERROR, "Shader::compile::glCompileShader() %s: %s", name, buffer);
+		Debug::debugme(M_ERROR, "Shader::compile::glCompileShader() %s: is FAILED to compile source code", name);
+		Debug::debugme(M_ERROR, "Shader::compile::glCompileShader() %s: %s", name, buffer);
 		return RET_FAILURE;
 	}
 	return RET_SUCCESS;

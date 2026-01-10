@@ -1,5 +1,7 @@
-#define USE_DEBUG
 #include "main.hpp"
+#include "input.hpp"
+#include "window.hpp"
+#include "debug.hpp"
 
 float Input::pitch = 0.0f, Input::yaw = 0.0f;
 float Input::sensivity_pointer = 1.0f;
@@ -9,6 +11,17 @@ glm::vec3 Input::position(0.0f, 0.0f, 0.0f), Input::direction(0.0f, 0.0f, -1.0f)
 int Input::setup(){
 	glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	return RET_SUCCESS;
+}
+
+void Input::mouse_mode(){
+	static bool change = false;
+
+	if(glfwGetKey(Window::window, GLFW_KEY_U) == GLFW_PRESS){
+		int mode = (change ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(Window::window, GLFW_CURSOR, mode);
+		change = !change;
+		Debug::debugme(M_INFO, "change: %s\n", change ? "true" : "false");
+	}
 }
 
 void Input::get_movement(){

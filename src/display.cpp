@@ -1,4 +1,5 @@
 #include "main.hpp"
+#include "display.hpp"
 
 int Display::framerate = 0;
 float Display::frametime = 0.0f;
