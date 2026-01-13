@@ -1,7 +1,7 @@
 #include "main.hpp"
 #include "shader.hpp"
-#include "debug.hpp"
 #include "text_loader.hpp"
+#include "debug.hpp"
 
 int Shader::load(const char* filename, int shader_type){
 	name = filename;
@@ -13,7 +13,7 @@ int Shader::load(const char* filename, int shader_type){
 	// load source code
 	int ret = load_text(name, sizeof(buffer), buffer);
 	if(ret){
-		Debug::debugme(M_ERROR, "Shader::load::load_text() %s: returns \"%s\"", error_to_string(ret), name);
+		Debug::debugme(M_ERROR, "Shader::load::load_text() %s: returns \"%s\"", name, error_to_string(ret));
 		return RET_FAILURE;
 	}
 	
@@ -39,10 +39,10 @@ int Shader::compile(){
 	return RET_SUCCESS;
 }
 
-void Shader::deleteshader(){
+void Shader::delete_shader(){
 	glDeleteShader(id);
 }
 
-int Shader::getID(){
+int Shader::get_ID(){
 	return id;
 }

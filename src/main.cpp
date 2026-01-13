@@ -15,33 +15,38 @@
 
 struct Setup{
 	const char *s_name;
-	int (*p_function)(void);
-	void (*p_cleanup)(void);
+	int (*p_setup)(void);
+	void (*p_terminate)(void);
 };
 Setup init[] = {
 	{ "Window::setup()", Window::setup, Window::terminate },
-	{ "Graphic::setup()", Graphic::setup, Graphic::cleanup },
+	{ "Graphic::setup()", Graphic::setup, Graphic::terminate },
 	{ "Input::setup()", Input::setup, nullptr },
 };
 
 struct Engine{
 	static int setup(){
-		for(int index = 0; index < sizeof(init)/sizeof(init[0]); index++){
-			if(init[index].p_function){
-				int ret = init[index].p_function();
-				if(ret){
-					Debug::debugme(M_ERROR, "%s is FAILED", init[index].s_name);
-					return RET_FAILURE;
-				}
-				Debug::debugme(M_SUCCESS, "%s is SUCCESSFULLY", init[index].s_name);
+		for(Setup &function : init){
+			if(!function.p_setup)
+				return RET_FAILURE;
+			
+			int r_value = function.p_setup();
+			if(r_value){
+				Debug::debugme(M_ERROR, "%s is FAILED to setup", function.s_name);
+				return RET_FAILURE;
 			}
+			Debug::debugme(M_SUCCESS, "%s is SUCCESSFULLY to setup", function.s_name);
 		}
 		return RET_SUCCESS;
 	}
 	static void cleanup(){
-		for(int index = 0; index < sizeof(init)/sizeof(init[0]); index++){
-			if(init[index].p_cleanup)
-				init[index].p_cleanup();
+		for(Setup &function : init){
+			if(!function.p_terminate){
+				Debug::debugme(M_WARNING, "%s is have not a terminate function #SKIP", function.s_name);
+				continue;
+			}
+			function.p_terminate();
+			Debug::debugme(M_SUCCESS, "%s is SUCCESSFULLY to terminate", function.s_name);
 		}
 	}
 	static void run(){
@@ -54,8 +59,10 @@ struct Engine{
 int main(){
 	if(Engine::setup())
 		return RET_FAILURE;
-
+	
 	Engine::run();
 	Engine::cleanup();
+	
+	Debug::debugme(M_SUCCESS, "Program Terminated");
 	return RET_SUCCESS;
 }

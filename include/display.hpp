@@ -8,6 +8,6 @@ class Display{
 	static float frametime;
 
 	public:
-	static void get_fps();
-	static void get_frametime();
+	static void update_fps();
+	static void update_frametime();
 };

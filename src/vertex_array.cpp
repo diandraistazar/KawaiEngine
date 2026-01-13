@@ -5,7 +5,7 @@
 void VertexArray::bind(VertexArray &array, bool use){
 	unsigned int id_temp = 0;
 	if(use)
-		id_temp = array.getID();
+		id_temp = array.get_ID();
 	glBindVertexArray(id_temp);
 }
 
@@ -13,47 +13,34 @@ void VertexArray::enablepointer(int location){
 	glEnableVertexAttribArray(location);
 }
 
-int VertexArray::getID(){
+int VertexArray::get_ID(){
 	return id;
 }
 
-int VertexArray::getVerticies(){
-	return buffer.size / sizeof(float) / buffer.vertex_size;
+int VertexArray::get_verticies(){
+	return p_buffer->get_size() / sizeof(float) / vertex_size;
 }
 
-int VertexArray::create(float *data, int size){
+int VertexArray::create(){
 	glGenVertexArrays(1, &id);
-	glGenBuffers(1, &buffer.id);
-	if(!id || !buffer.id){
+	if(!id){
 		Debug::debugme(M_ERROR, "VertexArray::create() created an ID with zero value");
 		return RET_FAILURE;
 	}
-	buffer.pointer = data;
-	buffer.size = size;
 	return RET_SUCCESS;
 }
 
-void VertexArray::deletearray(){
+void VertexArray::delete_array(){
 	glDeleteVertexArrays(1, &id);
-	glDeleteBuffers(1, &buffer.id);
 }
 
-void VertexArray::bind_buffer(int target, bool use){
-	unsigned int buffer_id_temp = 0;
-	if(use){
-		buffer_id_temp = buffer.id;
-		buffer.target = target;
-	}
-	glBindBuffer(buffer.target, buffer_id_temp);
-}
-
-void VertexArray::setpointer(int location, int count, int type, int stride, void* offset){
-	buffer.vertex_size += count;
+void VertexArray::set_pointer(int location, int count, int type, int stride, void* offset){
+	vertex_size += count;
 	glVertexAttribPointer(location, count, type, GL_FALSE, stride, offset);
 }
 
-void VertexArray::copydata(int use){
-	glBufferData(buffer.target, buffer.size, buffer.pointer, use);
+void VertexArray::store_vbo(VertexBuffer &buffer){
+	p_buffer = &buffer;
 }
 
 // For Transformation
@@ -69,10 +56,10 @@ void VertexArray::translate(float x, float y, float z){
 	matrix = glm::translate(matrix, glm::vec3(x, y, z));
 }
 
-void VertexArray::resetMatrix(float value){
+void VertexArray::reset_matrix(float value){
 	matrix *= glm::inverse(matrix);
 }
 
-glm::mat4 VertexArray::getMatrix(){
+glm::mat4 VertexArray::get_matrix(){
 	return matrix;
 }

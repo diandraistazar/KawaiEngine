@@ -1,7 +1,11 @@
 #version 430 core
 
-out vec4 Color;
+out vec4 outColor;
+
+uniform struct Light{
+	vec3 lighting;
+} light;
 
 void main(){
-	Color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	outColor = vec4(light.lighting, 1.0f);
 }

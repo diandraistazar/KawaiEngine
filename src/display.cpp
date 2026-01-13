@@ -4,7 +4,7 @@
 int Display::framerate = 0;
 float Display::frametime = 0.0f;
 
-void Display::get_fps(){
+void Display::update_fps(){
 	static float l_time = 0.0f;
 	float time = glfwGetTime();
 	static int frame = 0;
@@ -19,7 +19,7 @@ void Display::get_fps(){
 	frame = 0;
 }
 
-void Display::get_frametime(){
+void Display::update_frametime(){
 	static float l_time = 0;
 	float time = glfwGetTime();
 	Display::frametime = time - l_time;

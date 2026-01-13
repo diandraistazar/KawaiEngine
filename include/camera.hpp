@@ -1,8 +1,10 @@
 #pragma once
 
 #include "main.hpp"
+#include "glm_math.hpp"
 
 class Camera{
+	public:
 	static float fov;
 	static float aspect_ratio;
 	static float near_plane;

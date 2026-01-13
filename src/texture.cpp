@@ -31,6 +31,6 @@ int Texture::create(int target, int base_level, int format, bool use_mipmap, con
 	return RET_SUCCESS;
 }
 
-void Texture::deletetexture(){
+void Texture::delete_texture(){
 	glDeleteBuffers(1, &id);
 }

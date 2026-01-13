@@ -1,11 +1,12 @@
 #include "main.hpp"
 #include "input.hpp"
+#include "camera.hpp"
 #include "window.hpp"
-#include "debug.hpp"
 
 float Input::pitch = 0.0f, Input::yaw = 0.0f;
-float Input::sensivity_pointer = 1.0f;
+float Input::sensivity_pointer = 0.8f;
 float Input::movement_speed = 1.0f;
+float Input::zoom_speed = 50.0f;
 glm::vec3 Input::position(0.0f, 0.0f, 0.0f), Input::direction(0.0f, 0.0f, -1.0f);
 
 int Input::setup(){
@@ -13,21 +14,27 @@ int Input::setup(){
 	return RET_SUCCESS;
 }
 
-void Input::mouse_mode(){
-	static bool change = false;
+void Input::get_zooming(){
+	static float last_time = 0.0f;
+	float time = glfwGetTime(), delta = time - last_time;
 
-	if(glfwGetKey(Window::window, GLFW_KEY_U) == GLFW_PRESS){
-		int mode = (change ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
-		glfwSetInputMode(Window::window, GLFW_CURSOR, mode);
-		change = !change;
-		Debug::debugme(M_INFO, "change: %s\n", change ? "true" : "false");
+	if(glfwGetMouseButton(Window::window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
+		Camera::fov -= zoom_speed * delta;
 	}
+	else if(glfwGetMouseButton(Window::window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS){
+		Camera::fov += zoom_speed * delta;
+	}
+
+	if(Camera::fov < 0.1f)
+		Camera::fov = 0.1f;
+
+	last_time = time;
 }
 
 void Input::get_movement(){
-	static float l_time = 0;
+	static float last_time = 0;
 	float time = glfwGetTime();
-	float delta = time - l_time;
+	float delta = time - last_time;
 	
 	if(glfwGetKey(Window::window, GLFW_KEY_W) == GLFW_PRESS){
 		position += direction * movement_speed * delta;
@@ -45,7 +52,7 @@ void Input::get_movement(){
 	if(position.y > 0.0f || position.y < 0.0f)
 		position.y = 0.0f;
 
-	l_time = time;
+	last_time = time;
 }
 
 void Input::get_direction(){

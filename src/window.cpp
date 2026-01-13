@@ -3,8 +3,8 @@
 #include "graphic.hpp"
 #include "input.hpp"
 #include "camera.hpp"
-#include "vertex_array.hpp"
 #include "display.hpp"
+#include "glm_math.hpp"
 #include "debug.hpp"
 
 GLFWwindow *Window::window = nullptr;
@@ -67,40 +67,19 @@ void Window::terminate(){
 }
 
 void Window::looping(){
-	Graphic::program.use(true);
-		
-	while(!glfwWindowShouldClose(Window::window)){
-		Display::get_fps();
-		Display::get_frametime();
-		
-		Input::mouse_mode();
+	while(!glfwWindowShouldClose(Window::window)){		
+		Input::get_zooming();	
 
-		Graphic::VAO[V_PLANE].resetMatrix(1.0f);
-		Graphic::VAO[V_PLANE].translate(0.0f, -0.5f, 0.0f);
-		Graphic::VAO[V_PLANE].rotate(90.0f, 1.0f, 0.0f, 0.0f);
-		Graphic::VAO[V_PLANE].scale(2.0f, 2.0f, 2.0f);
-
-		Graphic::VAO[V_TRIANGLE].resetMatrix(1.0f);
-		Graphic::VAO[V_TRIANGLE].translate(0.0f, 0.3f, 0.0f);
-		Graphic::VAO[V_TRIANGLE].rotate(glfwGetTime(), 0.0f, 1.0f, 0.0f);
-
-		Graphic::VAO[V_LIGHT].resetMatrix(1.0f);
-		Graphic::VAO[V_LIGHT].rotate(glfwGetTime() * 180.0f / 3.14f, 0.0f, 1.0f, 0.0f);
-		Graphic::VAO[V_LIGHT].translate(2.0f, 0.0f, 0.0f);
-		Graphic::VAO[V_LIGHT].scale(0.5f, 0.5f, 0.5f);
-
+		glm::mat4 matrix = Camera::projection() * Camera::view();
 		Graphic::clear();
-		for(VertexArray &array : Graphic::VAO){
-			glm::mat4 matrix = Camera::projection() * Camera::view() * array.getMatrix();
-			
-			VertexArray::bind(array, true);
-			Graphic::program.setUniformMatrix4fv("matrix", glm::value_ptr(matrix));
-			
-			Graphic::draw(array);		
-		}
+		Graphic::draw_light_cube(matrix);
+		Graphic::draw_plane(matrix);
+
 		glfwPollEvents();
 		glfwSwapBuffers(Window::window);
 
+		Display::update_fps();
+		Display::update_frametime();
 		Debug::debugme(M_INFO, "FPS: %d, FRM: %f", Display::framerate, Display::frametime);
 		Debug::debugme(M_INFO, "Position: %.2f %.2f %.2f, Direction: %.2f %.2f %.2f", Input::position.x, Input::position.y, Input::position.z, Input::direction.x, Input::direction.y, Input::direction.z);
 		Debug::debugme(M_INFO, "Pitch: %.2f, Yaw: %.2f", Input::pitch, Input::yaw);

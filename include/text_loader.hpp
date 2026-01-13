@@ -3,7 +3,7 @@
 // C++ Library to load Text File (.txt, .cpp, .c, something like that) as an array of bytes in memory main
 enum ErrorValue { TEXT_LOADER_SUCCESS, TEXT_LOADER_CANNOT_LOAD, TEXT_LOADER_INVALID_ERROR, TEXT_LOADER_TOTAL };
 #include <cstdio>
-#include <memory>
+#include <cstring>
 
 int load_text(const char* filename, size_t dest_size, char* dest)
 {
@@ -14,7 +14,7 @@ int load_text(const char* filename, size_t dest_size, char* dest)
 	if(!file)
 		return TEXT_LOADER_CANNOT_LOAD;
 
-    std::memset(dest, 0, dest_size);
+   std::memset(dest, 0, dest_size);
 	int bytes = std::fread(dest, sizeof(char), dest_size, file);
 	if(bytes < 1)
 		return TEXT_LOADER_CANNOT_LOAD;
