@@ -2,9 +2,11 @@
 
 in vec3 pos;
 
-uniform mat4 model;
-uniform mat4 matrix;
+uniform struct {
+	mat4 model;
+	mat4 eye;
+}matrix;
 
 void main(){
-	gl_Position = matrix * model * vec4(pos, 1.0f);
+	gl_Position = matrix.eye * matrix.model * vec4(pos, 1.0f);
 }

@@ -5,7 +5,7 @@
 void VertexArray::bind(VertexArray &array, bool use){
 	unsigned int id_temp = 0;
 	if(use)
-		id_temp = array.get_ID();
+		id_temp = array.id;
 	glBindVertexArray(id_temp);
 }
 
@@ -13,12 +13,8 @@ void VertexArray::enablepointer(int location){
 	glEnableVertexAttribArray(location);
 }
 
-int VertexArray::get_ID(){
-	return id;
-}
-
 int VertexArray::get_verticies(){
-	return p_buffer->get_size() / sizeof(float) / vertex_size;
+	return p_buffer->size / sizeof(float) / vertex_size;
 }
 
 int VertexArray::create(){
@@ -58,8 +54,4 @@ void VertexArray::translate(float x, float y, float z){
 
 void VertexArray::reset_matrix(float value){
 	matrix *= glm::inverse(matrix);
-}
-
-glm::mat4 VertexArray::get_matrix(){
-	return matrix;
 }

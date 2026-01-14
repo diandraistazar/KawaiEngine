@@ -1,13 +1,10 @@
 #pragma once
 
-class ShaderProgram{
+struct ShaderProgram{
 	unsigned int id = -1;
 
-	public:
 	static void use(ShaderProgram &program, bool use);
 
-	public:
-	int get_ID();
 	int create();
 	void delete_prog();
 	void attach(int shader);

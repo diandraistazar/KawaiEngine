@@ -7,22 +7,6 @@ enum { M_SUCCESS, M_WARNING, M_ERROR, M_INFO };
 
 using std::fprintf, std::FILE;
 struct Debug{
-	template<typename... Arg>
-	static void debugme(int type, const char *string, Arg... args){
-		FILE *output[] = { stdout, stdout, stderr, stdout };
-		const char *strings[] = { 
-			// GREEN	YELLOW		 RED		WHITE	
-			"SUCCESS",  "WARNING",  "ERROR",    "INFO",
-			"\e[32m",   "\e[33m",   "\e[31m",   "",
-			
-			// RESET
-			"\e[0m"
-		};
-		
-		fprintf(output[type], "%s-%s:%s[%s] = ", PROGRAM, VERSION, strings[type+4], strings[type]);
-		fprintf(output[type], string, args...);
-		fprintf(output[type], "%s\n", strings[8]);
-	}
 	static const char *GetErrorString(){
 		int flags[] = {
 			GL_NO_ERROR, GL_INVALID_ENUM, GL_INVALID_VALUE, GL_INVALID_OPERATION,
@@ -41,5 +25,21 @@ struct Debug{
 			return s_flags[index];
 		}
 		return nullptr;
+	}
+	template<typename... Arg>
+	static void debugme(int type, const char *string, Arg... args){
+		FILE *output[] = { stdout, stdout, stderr, stdout };
+		const char *strings[] = { 
+			// GREEN	YELLOW		 RED		WHITE	
+			"SUCCESS",  "WARNING",  "ERROR",    "INFO",
+			"\e[32m",   "\e[33m",   "\e[31m",   "",
+			
+			// RESET
+			"\e[0m"
+		};
+		
+		fprintf(output[type], "%s-%s:%s[%s] = ", PROGRAM, VERSION, strings[type+4], strings[type]);
+		fprintf(output[type], string, args...);
+		fprintf(output[type], "%s\n", strings[8]);
 	}
 };

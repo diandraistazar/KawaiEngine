@@ -5,22 +5,10 @@
 void VertexBuffer::bind(VertexBuffer &buffer, int target, bool use){
 	unsigned int id_temp = 0;
 	if(use){
-		id_temp = buffer.get_ID();
-		buffer.set_target(target);
+		id_temp = buffer.id;
+		buffer.target = target;
 	}
 	glBindBuffer(target, id_temp);
-}
-
-int VertexBuffer::get_ID(){
-	return id;
-}
-
-int VertexBuffer::get_size(){
-	return size;
-}
-
-void VertexBuffer::set_target(int target){
-	c_target = target;
 }
 
 int VertexBuffer::create(){
@@ -39,5 +27,5 @@ void VertexBuffer::delete_buffer(){
 
 void VertexBuffer::copy_data(int data_size, float *data, int use){
 	size = data_size;
-	glBufferData(c_target, size, data, use);
+	glBufferData(target, size, data, use);
 }

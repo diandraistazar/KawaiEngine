@@ -5,13 +5,9 @@
 void ShaderProgram::use(ShaderProgram &program, bool use){
 	unsigned int id_temp = 0;
 	if(use){
-		id_temp = program.get_ID();
+		id_temp = program.id;
 	}
 	glUseProgram(id_temp);
-}
-
-int ShaderProgram::get_ID(){
-	return id;
 }
 
 int ShaderProgram::create(){

@@ -2,10 +2,10 @@
 
 out vec4 outColor;
 
-uniform struct Light{
-	vec3 lighting;
+uniform struct{
+	vec3 color;
 } light;
 
 void main(){
-	outColor = vec4(light.lighting, 1.0f);
+	outColor = vec4(light.color, 1.0f);
 }

@@ -7,21 +7,29 @@ in vec3 fragNormal;
 out vec4 outColor;
 
 uniform sampler2D uTexture;
-uniform struct Light{
+uniform struct{
 	vec3 position;
-	vec3 lighting;
+	vec3 color;
+	float radius;
+	float ambient;
 } light;
 
 void main(){
-	// Diffuse light
-	vec3 light_direction = normalize(light.position - fragPosition);
-	float brightness = dot(fragNormal, light_direction);
-
-	if(brightness <= 0.0f)
-		return;
-
 	vec4 texture_color = texture(uTexture, fragTexCoor);
-	vec4 lighting = vec4(light.lighting, 1.0f);
+	vec4 light_color = vec4(light.color, 1.0f);
+
+	// Ambient
+	vec4 ambient = texture_color * light.ambient;
+
+	// Diffuse light
+	vec3 light_direction = light.position - fragPosition;
+	float light_length = length(light_direction);
+	float light_radius = (light.radius - light_length) * 0.5f;
+	float brightness = dot(fragNormal, normalize(light_direction)) + light_radius;
+	brightness = max(brightness, 0.0f);
+
+	// Specular
+
 	// Store into the current fragment
-	outColor = texture_color * lighting * brightness;
+	outColor = texture_color * light_color * brightness + ambient;
 }

@@ -42,7 +42,3 @@ int Shader::compile(){
 void Shader::delete_shader(){
 	glDeleteShader(id);
 }
-
-int Shader::get_ID(){
-	return id;
-}
