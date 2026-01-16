@@ -12,7 +12,16 @@ uniform struct{
 	vec3 color;
 	float radius;
 	float ambient;
+	float specular;
 } light;
+
+uniform struct{
+	vec3 position;
+} view;
+
+vec3 reflect_vec3(vec3 normal, vec3 vector){
+	return vector - (2 * (dot(normal, vector)) * normal);
+}
 
 void main(){
 	vec4 texture_color = texture(uTexture, fragTexCoor);
@@ -29,7 +38,11 @@ void main(){
 	brightness = max(brightness, 0.0f);
 
 	// Specular
+	vec3 reflected_direction = reflect_vec3(fragNormal, normalize(light_direction) * -1.0f);
+	vec3 view_direction = normalize(view.position - fragPosition);
+	float specular = dot(reflected_direction, view_direction);
+	specular = max(pow(specular, 42), 0.0f) * light.specular;
 
 	// Store into the current fragment
-	outColor = texture_color * light_color * brightness + ambient;
+	outColor = texture_color * light_color * brightness + specular + ambient;
 }

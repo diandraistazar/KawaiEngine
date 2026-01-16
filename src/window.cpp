@@ -4,22 +4,22 @@
 #include "input.hpp"
 #include "camera.hpp"
 #include "display.hpp"
-#include "glm_math.hpp"
 #include "debug.hpp"
+#include <array>
 
 GLFWwindow *Window::window = nullptr;
 int Window::win_width = 960;
 int Window::win_height = 660;
 
 void setWindowHint(){
-	int values[] = {
-	//	Hint				 		Value
+	std::array<int, 3*2> values = {
+	//	Hint				 				Value
 		GLFW_OPENGL_PROFILE, 		GLFW_OPENGL_CORE_PROFILE,
 		GLFW_CONTEXT_VERSION_MAJOR, 4,
 		GLFW_CONTEXT_VERSION_MINOR, 3,
 	};
 
-	for(int i = 0; i < sizeof(values) / sizeof(values[0]); i+=2)
+	for(int i = 0; i < values.size(); i+=2)
 		glfwWindowHint(values[i], values[i+1]);
 }
 
@@ -56,7 +56,7 @@ int Window::setup(){
 		Debug::debugme(M_ERROR, "Window::setup::gladLoadGLLoader() returns false");
 		return RET_FAILURE;
 	}
-	Debug::debugme(M_SUCCESS, "Window::setup::gladLoadGLLoader() is SUCCESSFULLY to load OpenGL 3.3 Functions");
+	Debug::debugme(M_SUCCESS, "Window::setup::gladLoadGLLoader() is SUCCESSFULLY to load OpenGL 4.3 Functions");
 	glfwSwapInterval(0);
 	return RET_SUCCESS;
 }
@@ -66,16 +66,18 @@ void Window::terminate(){
 	glfwTerminate();
 }
 
+using namespace glm;
 void Window::looping(){
 	while(!glfwWindowShouldClose(Window::window)){		
-		Input::get_zooming();	
+		Input::get_zooming();
+		Input::get_movement();
+		Input::get_direction();
+		glfwPollEvents();
 
 		glm::mat4 matrix = Camera::projection() * Camera::view();
 		Graphic::clear();
 		Graphic::draw_light_cube(matrix);
 		Graphic::draw_plane(matrix);
-
-		glfwPollEvents();
 		glfwSwapBuffers(Window::window);
 
 		Display::update_fps();

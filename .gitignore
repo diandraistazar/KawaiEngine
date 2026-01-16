@@ -1,2 +1,2 @@
 *.out
-compile_flags.txt
+compile_commands.json

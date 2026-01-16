@@ -1,5 +1,6 @@
 #include "main.hpp"
 #include "graphic.hpp"
+#include "input.hpp"
 #include "debug.hpp"
 #include <array>
 
@@ -78,23 +79,21 @@ Shader Graphic::shader[SH_TOTAL];
 Texture Graphic::texture[TX_TOTAL];
 
 int Graphic::setup(){
-	int ret = 0;
-	
 	// Create VAOs
-	ret = 0;
-	ret |= VAO[VA_PLANE].create();
-	ret |= VAO[VA_LIGHT].create();
-	if(ret){
+	if(
+		VAO[VA_PLANE].create() ||
+		VAO[VA_LIGHT].create()
+	){
 		Debug::debugme(M_ERROR, "Graphic::setup::createVAO() returns RET_FAILURE");
 		return RET_FAILURE;
 	}
 	Debug::debugme(M_SUCCESS, "Graphic::setup::createVAO() returns RET_SUCCESS");
 
 	// Create VBOs
-	ret = 0;
-	ret |= VBO[VB_PLANE].create();
-	ret |= VBO[VB_LIGHT].create();
-	if(ret){
+	if(
+		VBO[VB_PLANE].create() ||
+		VBO[VB_LIGHT].create()
+	){
 		Debug::debugme(M_ERROR, "Graphic::setup::createVBO() returns RET_FAILURE");
 		return RET_FAILURE;
 	}
@@ -125,10 +124,9 @@ int Graphic::setup(){
 	VertexBuffer::bind(VBO[VB_TOTAL-1], GL_ARRAY_BUFFER, false);
 
 	// Texture
-	ret = 0;
-	ret |= texture[TX_GRASS].create();
-	ret |= texture[TX_GRASS].load("texture/green-grass-texture.jpg");
-	if(ret){
+	if(
+		texture[TX_GRASS].create() || texture[TX_GRASS].load("texture/green-grass-texture.jpg")
+	){
 		Debug::debugme(M_ERROR, "Graphic::setup::loadtextures() returns RET_FAILURE");
 		return RET_FAILURE;
 	}
@@ -137,37 +135,36 @@ int Graphic::setup(){
 	Texture::activeTexture(GL_TEXTURE0);
 	Texture::bind(texture[TX_GRASS], GL_TEXTURE_2D, true);
 	texture[TX_GRASS].texture2D(0, GL_RGB, true);
-	texture[TX_GRASS].free_image();
 
 	// Create shader and intialize
-	ret = 0;
-	ret |= shader[SH_VERTEX].load("shader/vertex.vert", GL_VERTEX_SHADER);
-	ret |= shader[SH_FRAGMENT].load("shader/fragment.frag", GL_FRAGMENT_SHADER);
-	ret |= shader[SH_LIGHT_VERT].load("shader/light.vert", GL_VERTEX_SHADER);
-	ret |= shader[SH_LIGHT_FRAG].load("shader/light.frag", GL_FRAGMENT_SHADER);
-	if(ret){
+	if(
+		shader[SH_VERTEX].load("shader/vertex.vert", GL_VERTEX_SHADER) ||
+		shader[SH_FRAGMENT].load("shader/fragment.frag", GL_FRAGMENT_SHADER) ||
+		shader[SH_LIGHT_VERT].load("shader/light.vert", GL_VERTEX_SHADER) ||
+		shader[SH_LIGHT_FRAG].load("shader/light.frag", GL_FRAGMENT_SHADER)
+	){
 		Debug::debugme(M_ERROR, "Graphic::setup::loadshaders() returns RET_FAILURE");
 		return RET_FAILURE;
 	}
 	Debug::debugme(M_SUCCESS, "Graphic::setup::loadshaders() returns RET_SUCCESS");
-
+	
 	// Compiling shaders
-	ret = 0;
-	ret |= shader[SH_VERTEX].compile();
-	ret |= shader[SH_FRAGMENT].compile();
-	ret |= shader[SH_LIGHT_VERT].compile();
-	ret |= shader[SH_LIGHT_FRAG].compile();
-	if(ret){
+	if(
+		shader[SH_VERTEX].compile() || 
+		shader[SH_FRAGMENT].compile() || 
+		shader[SH_LIGHT_VERT].compile() ||
+		shader[SH_LIGHT_FRAG].compile()
+	){
 		Debug::debugme(M_ERROR, "Graphic::setup::compileshaders() returns RET_FAILURE");
 		return RET_FAILURE;
 	}
 	Debug::debugme(M_SUCCESS, "Graphic::setup::compileshaders() returns RET_SUCCESS");
 
 	// Create a program and attach shaders with it then linking
-	ret = 0;
-	ret |= program[PG_PROGRAM].create();
-	ret |= program[PG_LIGHT].create();
-	if(ret){
+	if(
+		program[PG_PROGRAM].create() || 
+		program[PG_LIGHT].create()
+	){
 		Debug::debugme(M_ERROR, "Graphic::setup::program::create() returns RET_FAILURE");
 		return RET_FAILURE;
 	}
@@ -186,6 +183,9 @@ int Graphic::setup(){
 	shader[SH_FRAGMENT].delete_shader();
 	shader[SH_LIGHT_VERT].delete_shader();
 	shader[SH_LIGHT_FRAG].delete_shader();
+	
+	// Delete texture from heap memory
+	texture[TX_GRASS].free_image();
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
@@ -219,7 +219,7 @@ void Graphic::draw_plane(glm::mat4 &eye){
 	VAO[VA_PLANE].reset_matrix(1.0f);
 	VAO[VA_PLANE].translate(0.0f, -0.5f, 0.0f);
 	VAO[VA_PLANE].rotate(90.0f, 1.0f, 0.0f, 0.0f);
-	VAO[VA_PLANE].scale(2.0f, 2.0f, 2.0f);
+	VAO[VA_PLANE].scale(8.0f, 8.0f, 8.0f);
 	glm::mat4 model = VAO[VA_PLANE].matrix;
 	glm::mat3 normal = glm::transpose(glm::inverse(glm::mat3(model))); // M-1T = Mnormal
 
@@ -227,14 +227,15 @@ void Graphic::draw_plane(glm::mat4 &eye){
 	program[PG_PROGRAM].setUniformMatrix4fv("matrix.model", glm::value_ptr(model));
 	program[PG_PROGRAM].setUniformMatrix4fv("matrix.eye", glm::value_ptr(eye));
 	program[PG_PROGRAM].setUniformMatrix3fv("matrix.normal", glm::value_ptr(normal));
+	program[PG_PROGRAM].setUniform3fv("view.position", glm::value_ptr(Input::position));
 	VertexArray::bind(VAO[VA_PLANE], true);
 	glDrawArrays(GL_TRIANGLES, 0, VAO[VA_PLANE].get_verticies());
 }
 
 void Graphic::draw_light_cube(glm::mat4 &eye){
 	VAO[VA_LIGHT].reset_matrix(1.0f);
-	VAO[VA_LIGHT].translate(0.0f, -0.2f, cos(glfwGetTime()));
-	VAO[VA_LIGHT].scale(0.2f, 0.2f, 0.2f);
+	VAO[VA_LIGHT].translate(cos(glfwGetTime()), -0.1f, cos(glfwGetTime()));
+	VAO[VA_LIGHT].scale(0.4f, 0.4f, 0.4f);
 	glm::mat4 model = VAO[VA_LIGHT].matrix;
 
 	struct{
@@ -242,22 +243,25 @@ void Graphic::draw_light_cube(glm::mat4 &eye){
 		glm::vec3 color;
 		float radius;
 		float ambient;
-	} source_light;
-	source_light.position = model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	source_light.color = glm::vec3(1.0f, 1.0f, 1.0f);
-	source_light.radius = 0.12f * 2.0f;
-	source_light.ambient = 0.05f;
-
+		float specular;
+	} light;
+	light.position = model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
+	light.radius = 0.24f * 10.0f;
+	light.ambient = 0.065f;
+	light.specular = 0.8f;
+	
 	ShaderProgram::use(program[PG_PROGRAM], true);
-	program[PG_PROGRAM].setUniform3fv("light.position", glm::value_ptr(source_light.position));
-	program[PG_PROGRAM].setUniform3fv("light.color", glm::value_ptr(source_light.color));
-	program[PG_PROGRAM].setUniform1f("light.radius", source_light.radius);
-	program[PG_PROGRAM].setUniform1f("light.ambient", source_light.ambient);
+	program[PG_PROGRAM].setUniform3fv("light.position", glm::value_ptr(light.position));
+	program[PG_PROGRAM].setUniform3fv("light.color", glm::value_ptr(light.color));
+	program[PG_PROGRAM].setUniform1f("light.radius", light.radius);
+	program[PG_PROGRAM].setUniform1f("light.ambient", light.ambient);
+	program[PG_PROGRAM].setUniform1f("light.specular", light.specular);
 
 	ShaderProgram::use(program[PG_LIGHT], true);
 	program[PG_LIGHT].setUniformMatrix4fv("matrix.model", glm::value_ptr(model));
 	program[PG_LIGHT].setUniformMatrix4fv("matrix.eye", glm::value_ptr(eye));
-	program[PG_LIGHT].setUniform3fv("light.color", glm::value_ptr(source_light.color));
+	program[PG_LIGHT].setUniform3fv("light.color", glm::value_ptr(light.color));
 	VertexArray::bind(VAO[VA_LIGHT], true);
 	glDrawArrays(GL_TRIANGLES, 0, VAO[VA_LIGHT].get_verticies());
 }

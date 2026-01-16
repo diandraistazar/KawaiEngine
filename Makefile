@@ -1,5 +1,5 @@
 CC = clang++
-FLAGS = -O0 -std=c++17 -Wall -Wno-format-security -fdiagnostics-color=always
+FLAGS = -O2 -std=c++17 -Wall -Wno-format-security -fdiagnostics-color=always
 INCLUDES = -I include
 LIBS = -lglfw -lGL
 

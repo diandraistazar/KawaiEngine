@@ -18,7 +18,7 @@ uniform struct{
 void main(){
 	fragPosition = vec3(matrix.model * vec4(Pos, 1.0f));
 	fragColor = Color;
-	fragTexCoor = TexCoor;
+	fragTexCoor = TexCoor * 3.0f;
 	fragNormal = normalize(matrix.normal * Normal); // Normal vector in world space
 	gl_Position = matrix.eye * matrix.model * vec4(Pos, 1.0f);
 }

@@ -1,32 +1,31 @@
 #pragma once
 
 // C++ Library to load Text File (.txt, .cpp, .c, something like that) as an array of bytes in memory main
-enum ErrorValue { TEXT_LOADER_SUCCESS, TEXT_LOADER_CANNOT_LOAD, TEXT_LOADER_INVALID_ERROR, TEXT_LOADER_TOTAL };
-#include <cstdio>
-#include <cstring>
+#include <fstream>
+#include <filesystem>
 
-int load_text(const char* filename, size_t dest_size, char* dest)
-{
-	if(!dest || dest_size < 0)
-		return TEXT_LOADER_INVALID_ERROR;
+namespace filesystem = std::filesystem;
+using std::ifstream;
 
-	std::FILE *file = std::fopen(filename, "r");
-	if(!file)
-		return TEXT_LOADER_CANNOT_LOAD;
+struct textloader{
+	static char *load(const char *filename){
+		filesystem::path file_path = filename;
+		ifstream file_stream(file_path);
+	
+		if(!file_stream.is_open())
+			return nullptr;
 
-   std::memset(dest, 0, dest_size);
-	int bytes = std::fread(dest, sizeof(char), dest_size, file);
-	if(bytes < 1)
-		return TEXT_LOADER_CANNOT_LOAD;
+		size_t file_size = filesystem::file_size(file_path);
+		char *data = new char[file_size+1]; // +1 for null terminator
+		file_stream.read(data, file_size);
+		data[file_size] = '\0';
 
-	std::fclose(file);
-    return TEXT_LOADER_SUCCESS;
-}
+		file_stream.close();
+		return data;
+	}
 
-const char* error_to_string(int return_value)
-{
-    const char* strings[TEXT_LOADER_TOTAL] = { "TEXT_LOADER_SUCCESS", "TEXT_LOADER_CANNOT_LOAD", "TEXT_LOADER_INVALID_ERROR" };
-    if(return_value >= 0 && return_value < TEXT_LOADER_TOTAL)
-        return strings[return_value];
-    return strings[TEXT_LOADER_INVALID_ERROR];
-}
+	static void free(char *data){
+		if(data)
+			delete data;
+	}
+};

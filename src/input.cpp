@@ -56,13 +56,13 @@ void Input::get_movement(){
 }
 
 void Input::get_direction(){
-	static double l_xpos = 0.0f, l_ypos = 0.0f;
+	static double last_xpos = 0.0f, last_ypos = 0.0f;
 	double xpos = 0.0f, ypos = 0.0f;
 
 	glfwGetCursorPos(Window::window, &xpos, &ypos);
-	if(l_xpos != 0.0f && l_ypos != 0.0f){
-		yaw += (xpos - l_xpos) * sensivity_pointer / Window::win_height * 180.0f;
-		pitch += (ypos - l_ypos) * sensivity_pointer / Window::win_width * 180.0f;
+	if(last_xpos != 0.0f && last_ypos != 0.0f){
+		yaw += (xpos - last_xpos) * sensivity_pointer / Window::win_height * 180.0f;
+		pitch += (ypos - last_ypos) * sensivity_pointer / Window::win_width * 180.0f;
 	
 		if(pitch > 89.9f)
 			pitch = 89.9f;
@@ -80,6 +80,6 @@ void Input::get_direction(){
 		direction.y = sin(pitch_radians) * -1.0f;
 		direction.z = sin(yaw_radians) * cos(pitch_radians);
 	}
-	l_xpos = xpos;
-	l_ypos = ypos;
+	last_xpos = xpos;
+	last_ypos = ypos;
 }
