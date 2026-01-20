@@ -7,14 +7,14 @@ float Input::pitch = 0.0f, Input::yaw = 0.0f;
 float Input::sensivity_pointer = 0.8f;
 float Input::movement_speed = 1.0f;
 float Input::zoom_speed = 50.0f;
-glm::vec3 Input::position(0.0f, 0.0f, 0.0f), Input::direction(0.0f, 0.0f, -1.0f);
+glm::vec3 Input::position(0.0f, 0.0f, 0.0f), Input::looking(0.0f, 0.0f, -1.0f);
 
 int Input::setup(){
 	glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	return RET_SUCCESS;
 }
 
-void Input::get_zooming(){
+void Input::zooming(){
 	static float last_time = 0.0f;
 	float time = glfwGetTime(), delta = time - last_time;
 
@@ -31,22 +31,22 @@ void Input::get_zooming(){
 	last_time = time;
 }
 
-void Input::get_movement(){
+void Input::movement(){
 	static float last_time = 0;
 	float time = glfwGetTime();
 	float delta = time - last_time;
 	
 	if(glfwGetKey(Window::window, GLFW_KEY_W) == GLFW_PRESS){
-		position += direction * movement_speed * delta;
+		position += looking * movement_speed * delta;
 	}
 	if(glfwGetKey(Window::window, GLFW_KEY_S) == GLFW_PRESS){
-		position -= direction * movement_speed * delta;
+		position -= looking * movement_speed * delta;
 	}
 	if(glfwGetKey(Window::window, GLFW_KEY_A) == GLFW_PRESS){
-		position -= glm::cross(direction, glm::vec3(0.0f, 1.0f, 0.0f)) * movement_speed * delta;
+		position -= glm::cross(looking, glm::vec3(0.0f, 1.0f, 0.0f)) * movement_speed * delta;
 	}
 	if(glfwGetKey(Window::window, GLFW_KEY_D) == GLFW_PRESS){
-		position += glm::cross(direction, glm::vec3(0.0f, 1.0f, 0.0f)) * movement_speed * delta;
+		position += glm::cross(looking, glm::vec3(0.0f, 1.0f, 0.0f)) * movement_speed * delta;
 	}
 
 	if(position.y > 0.0f || position.y < 0.0f)
@@ -55,7 +55,7 @@ void Input::get_movement(){
 	last_time = time;
 }
 
-void Input::get_direction(){
+void Input::direction(){
 	static double last_xpos = 0.0f, last_ypos = 0.0f;
 	double xpos = 0.0f, ypos = 0.0f;
 
@@ -76,9 +76,9 @@ void Input::get_direction(){
 
 		float yaw_radians = glm::radians(yaw);
 		float pitch_radians = glm::radians(pitch);
-		direction.x = cos(yaw_radians) * cos(pitch_radians);
-		direction.y = sin(pitch_radians) * -1.0f;
-		direction.z = sin(yaw_radians) * cos(pitch_radians);
+		looking.x = cos(yaw_radians) * cos(pitch_radians);
+		looking.y = sin(pitch_radians) * -1.0f;
+		looking.z = sin(yaw_radians) * cos(pitch_radians);
 	}
 	last_xpos = xpos;
 	last_ypos = ypos;

@@ -29,8 +29,8 @@ int Texture::create(){
 }
 
 int Texture::load(const char *img_name){
-	data = (unsigned char*)stbi_load(img_name, &img_w, &img_h, &comp, 0);
-	if(!data){
+	p_data = (unsigned char*)stbi_load(img_name, &img_w, &img_h, &comp, 0);
+	if(!p_data){
 		Debug::debugme(M_ERROR, "Texture::create() data returns NULL");
 		return RET_FAILURE;
 	}
@@ -39,13 +39,13 @@ int Texture::load(const char *img_name){
 }
 
 void Texture::texture2D(int base_level, int format, bool use_mipmap){
-	glTexImage2D(target, base_level, format, img_w, img_h, 0, format, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(target, base_level, format, img_w, img_h, 0, format, GL_UNSIGNED_BYTE, p_data);
 	if(use_mipmap)
 		glGenerateMipmap(target);
 }
 
 void Texture::free_image(){
-	stbi_image_free(data);
+	stbi_image_free(p_data);
 }
 
 void Texture::delete_texture(){

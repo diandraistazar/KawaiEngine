@@ -1,9 +1,9 @@
 #pragma once
 
 struct Texture{
-	unsigned char *data = nullptr;
-	int target = -1;
+	unsigned char *p_data = nullptr;
 	unsigned int id = -1;
+	int target = -1;
 	int img_w, img_h, comp;
 
 	static void activeTexture(int unit);

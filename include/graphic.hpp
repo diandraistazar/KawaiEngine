@@ -5,11 +5,11 @@
 #include "shader.hpp"
 #include "texture.hpp"
 
-enum VAOs { VA_PLANE, VA_LIGHT, VA_TOTAL };
-enum VBOs { VB_PLANE, VB_LIGHT, VB_TOTAL };
-enum PROGRAMs { PG_PROGRAM, PG_LIGHT, PG_TOTAL };
-enum SHADERs { SH_VERTEX, SH_FRAGMENT, SH_LIGHT_VERT, SH_LIGHT_FRAG, SH_TOTAL };
-enum TEXTUREs { TX_GRASS, TX_TOTAL };
+enum { VA_PLANE, VA_LIGHT, VA_TOTAL };
+enum { VB_PLANE, VB_LIGHT, VB_TOTAL };
+enum { PG_PROGRAM, PG_LIGHT, PG_TOTAL };
+enum { SH_VERTEX, SH_FRAGMENT, SH_LIGHT_VERT, SH_LIGHT_FRAG, SH_TOTAL };
+enum { TX_GRASS, TX_TOTAL };
 
 struct Graphic{
 	static VertexArray VAO[VA_TOTAL];

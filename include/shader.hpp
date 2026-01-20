@@ -1,8 +1,8 @@
 #pragma once
 
 struct Shader{
-	const char *name = nullptr;
-	char *data = nullptr;
+	const char *s_name = nullptr;
+	char *p_data = nullptr;
 	unsigned int id = -1;
 
 	int load(const char* filename, int shader_type);

@@ -69,9 +69,9 @@ void Window::terminate(){
 using namespace glm;
 void Window::looping(){
 	while(!glfwWindowShouldClose(Window::window)){		
-		Input::get_zooming();
-		Input::get_movement();
-		Input::get_direction();
+		Input::zooming();
+		Input::movement();
+		Input::direction();
 		glfwPollEvents();
 
 		glm::mat4 matrix = Camera::projection() * Camera::view();
@@ -83,7 +83,7 @@ void Window::looping(){
 		Display::update_fps();
 		Display::update_frametime();
 		Debug::debugme(M_INFO, "FPS: %d, FRM: %f", Display::framerate, Display::frametime);
-		Debug::debugme(M_INFO, "Position: %.2f %.2f %.2f, Direction: %.2f %.2f %.2f", Input::position.x, Input::position.y, Input::position.z, Input::direction.x, Input::direction.y, Input::direction.z);
+		Debug::debugme(M_INFO, "Position: %.2f %.2f %.2f, Direction: %.2f %.2f %.2f", Input::position.x, Input::position.y, Input::position.z, Input::looking.x, Input::looking.y, Input::looking.z);
 		Debug::debugme(M_INFO, "Pitch: %.2f, Yaw: %.2f", Input::pitch, Input::yaw);
 	}
 }

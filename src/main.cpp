@@ -17,11 +17,11 @@ struct Setup{
 	const char *s_name;
 	int (*p_setup)(void);
 	void (*p_terminate)(void);
-};
-Setup init[] = {
-	{ "Window::setup()", Window::setup, Window::terminate },
-	{ "Graphic::setup()", Graphic::setup, Graphic::terminate },
-	{ "Input::setup()", Input::setup, nullptr },
+} init[] = {
+//		Strings					Setup Functions	Terminate Functions
+	{ "Window::setup()", 	Window::setup, 	Window::terminate },
+	{ "Graphic::setup()", 	Graphic::setup, 	Graphic::terminate },
+	{ "Input::setup()", 		Input::setup, 		nullptr },
 };
 
 struct Engine{

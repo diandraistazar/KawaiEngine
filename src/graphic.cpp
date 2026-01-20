@@ -1,6 +1,7 @@
 #include "main.hpp"
 #include "graphic.hpp"
 #include "input.hpp"
+#include "data_structures.hpp"
 #include "debug.hpp"
 #include <array>
 
@@ -99,7 +100,7 @@ int Graphic::setup(){
 	}
 	Debug::debugme(M_SUCCESS, "Graphic::setup::createVBO() returns RET_SUCCESS");
 	
-	// Bind VAO
+	// Bind VAO and VBO, then copy data into gpu's memory
 	VertexArray::bind(VAO[VA_PLANE], true);
 	VertexBuffer::bind(VBO[VB_PLANE], GL_ARRAY_BUFFER, true);
 	VAO[VA_PLANE].store_vbo(VBO[VB_PLANE]);
@@ -123,7 +124,7 @@ int Graphic::setup(){
 	VertexArray::bind(VAO[VA_TOTAL-1], false);
 	VertexBuffer::bind(VBO[VB_TOTAL-1], GL_ARRAY_BUFFER, false);
 
-	// Texture
+	// Load textures
 	if(
 		texture[TX_GRASS].create() || texture[TX_GRASS].load("texture/green-grass-texture.jpg")
 	){
@@ -136,7 +137,7 @@ int Graphic::setup(){
 	Texture::bind(texture[TX_GRASS], GL_TEXTURE_2D, true);
 	texture[TX_GRASS].texture2D(0, GL_RGB, true);
 
-	// Create shader and intialize
+	// Create shaders and intialize
 	if(
 		shader[SH_VERTEX].load("shader/vertex.vert", GL_VERTEX_SHADER) ||
 		shader[SH_FRAGMENT].load("shader/fragment.frag", GL_FRAGMENT_SHADER) ||
@@ -160,7 +161,7 @@ int Graphic::setup(){
 	}
 	Debug::debugme(M_SUCCESS, "Graphic::setup::compileshaders() returns RET_SUCCESS");
 
-	// Create a program and attach shaders with it then linking
+	// Create programs and attach shaders, then linking
 	if(
 		program[PG_PROGRAM].create() || 
 		program[PG_LIGHT].create()
@@ -184,7 +185,7 @@ int Graphic::setup(){
 	shader[SH_LIGHT_VERT].delete_shader();
 	shader[SH_LIGHT_FRAG].delete_shader();
 	
-	// Delete texture from heap memory
+	// Delete textures from heap memory
 	texture[TX_GRASS].free_image();
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -196,6 +197,7 @@ void Graphic::terminate(){
 	VertexArray::bind(VAO[VA_TOTAL-1], false);
 	VertexBuffer::bind(VBO[VB_TOTAL-1], GL_ARRAY_BUFFER, false);
 	ShaderProgram::use(program[PG_TOTAL-1], false);
+	
 	for(VertexArray &array : VAO){
 		array.delete_array();
 	}
@@ -233,35 +235,50 @@ void Graphic::draw_plane(glm::mat4 &eye){
 }
 
 void Graphic::draw_light_cube(glm::mat4 &eye){
+	float time = glfwGetTime();
+
 	VAO[VA_LIGHT].reset_matrix(1.0f);
-	VAO[VA_LIGHT].translate(cos(glfwGetTime()), -0.1f, cos(glfwGetTime()));
+	VAO[VA_LIGHT].translate(cos(time), -0.1f, cos(time));
 	VAO[VA_LIGHT].scale(0.4f, 0.4f, 0.4f);
 	glm::mat4 model = VAO[VA_LIGHT].matrix;
 
-	struct{
-		glm::vec3 position;
-		glm::vec3 color;
-		float radius;
-		float ambient;
-		float specular;
-	} light;
-	light.position = model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
-	light.radius = 0.24f * 10.0f;
-	light.ambient = 0.065f;
-	light.specular = 0.8f;
+	Light source_light = {
+		.position = model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f),
+	};
 	
 	ShaderProgram::use(program[PG_PROGRAM], true);
-	program[PG_PROGRAM].setUniform3fv("light.position", glm::value_ptr(light.position));
-	program[PG_PROGRAM].setUniform3fv("light.color", glm::value_ptr(light.color));
-	program[PG_PROGRAM].setUniform1f("light.radius", light.radius);
-	program[PG_PROGRAM].setUniform1f("light.ambient", light.ambient);
-	program[PG_PROGRAM].setUniform1f("light.specular", light.specular);
+	program[PG_PROGRAM].setUniform3fv("light.position", glm::value_ptr(source_light.position));
+
+	static bool run = false;
+	if(!run){
+		source_light = {
+			.color = glm::vec3(1.0f),
+			.intensity = glm::vec3(1.5),
+			.ambient = glm::vec3(0.1f),
+			.specular = glm::vec3(1.0f),
+		};
+		Material light = {
+			.ambient = glm::vec3(0.1f),
+			.specular = glm::vec3(0.8f),
+		};
+
+		program[PG_PROGRAM].setUniform3fv("light.color", glm::value_ptr(source_light.color));
+		program[PG_PROGRAM].setUniform3fv("light.intensity", glm::value_ptr(source_light.intensity));
+		program[PG_PROGRAM].setUniform3fv("light.ambient", glm::value_ptr(source_light.ambient));
+		program[PG_PROGRAM].setUniform3fv("light.specular", glm::value_ptr(source_light.specular));
+		program[PG_PROGRAM].setUniform3fv("material.ambient", glm::value_ptr(light.ambient));
+		program[PG_PROGRAM].setUniform3fv("material.specular", glm::value_ptr(light.specular));
+
+		ShaderProgram::use(program[PG_LIGHT], true);
+		program[PG_LIGHT].setUniform3fv("light.color", glm::value_ptr(source_light.color));
+		program[PG_LIGHT].setUniform3fv("light.intensity", glm::value_ptr(source_light.intensity));
+
+		run = true;
+	}
 
 	ShaderProgram::use(program[PG_LIGHT], true);
 	program[PG_LIGHT].setUniformMatrix4fv("matrix.model", glm::value_ptr(model));
 	program[PG_LIGHT].setUniformMatrix4fv("matrix.eye", glm::value_ptr(eye));
-	program[PG_LIGHT].setUniform3fv("light.color", glm::value_ptr(light.color));
 	VertexArray::bind(VAO[VA_LIGHT], true);
 	glDrawArrays(GL_TRIANGLES, 0, VAO[VA_LIGHT].get_verticies());
 }
